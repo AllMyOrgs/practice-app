@@ -12,17 +12,13 @@ function setCors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
 
-// ── Storage helpers ──────────────────────────────────────────────────────────
-
 async function readData() {
   if (process.env.BLOB_READ_WRITE_TOKEN) {
-    try {
-      const { blobs } = await list({ prefix: BLOB_NAME });
-      const blob = blobs.find(b => b.pathname === BLOB_NAME);
-      if (!blob) return { submissions: [] };
-      const res = await fetch(blob.downloadUrl);
-      return await res.json();
-    } catch { return { submissions: [] }; }
+    const { blobs } = await list({ prefix: BLOB_NAME });
+    const blob = blobs.find(b => b.pathname === BLOB_NAME);
+    if (!blob) return { submissions: [] };
+    const res = await fetch(blob.url);
+    return await res.json();
   }
   // Local dev fallback
   try {
@@ -43,8 +39,6 @@ async function writeData(data) {
   }
 }
 
-// ── Handler ──────────────────────────────────────────────────────────────────
-
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -54,25 +48,21 @@ module.exports = async function handler(req, res) {
   if (!name || !email || !department || !experience)
     return res.status(400).json({ error: 'Missing required fields' });
 
-  try {
-    const data = await readData();
+  const data = await readData();
 
-    const submission = {
-      id: Date.now().toString(),
-      name: String(name).trim(),
-      email: String(email).trim().toLowerCase(),
-      department: String(department),
-      experience: String(experience),
-      skills: Array.isArray(skills) ? skills : [],
-      agreeToTerms: Boolean(agreeToTerms),
-      submittedAt: new Date().toISOString(),
-    };
+  const submission = {
+    id: Date.now().toString(),
+    name: String(name).trim(),
+    email: String(email).trim().toLowerCase(),
+    department: String(department),
+    experience: String(experience),
+    skills: Array.isArray(skills) ? skills : [],
+    agreeToTerms: Boolean(agreeToTerms),
+    submittedAt: new Date().toISOString(),
+  };
 
-    data.submissions.push(submission);
-    await writeData(data);
+  data.submissions.push(submission);
+  await writeData(data);
 
-    return res.status(201).json({ success: true, submission });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
+  return res.status(201).json({ success: true, submission });
 };
