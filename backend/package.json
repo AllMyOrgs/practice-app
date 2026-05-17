@@ -1,0 +1,10 @@
+{
+  "name": "practice-app-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node server-dev.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5"
+  }
+}

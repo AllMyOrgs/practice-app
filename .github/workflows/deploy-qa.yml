@@ -1,0 +1,99 @@
+name: Deploy — QA
+
+on:
+  push:
+    branches: [qa]
+  workflow_dispatch:
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+
+jobs:
+  # Pauses here until a reviewer approves in GitHub Actions UI.
+  # Configure reviewers: GitHub → Settings → Environments → qa → Required reviewers
+  request-approval:
+    name: Waiting for QA approval
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - run: echo "QA deployment approved"
+
+  deploy-backend:
+    name: Backend → QA
+    runs-on: ubuntu-latest
+    needs: request-approval
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_QA }}
+
+      - name: Build
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_QA }}
+
+      - name: Deploy
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_QA }}
+
+      - name: Summary
+        run: echo "### Backend QA → ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy-frontend:
+    name: Frontend → QA
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_QA }}
+
+      - name: Build
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_QA }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL_QA }}
+
+      - name: Deploy
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_QA }}
+
+      - name: Summary
+        run: echo "### Frontend QA → ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,99 @@
+name: Deploy — PROD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+
+jobs:
+  # Pauses here until a reviewer approves in GitHub Actions UI.
+  # Configure reviewers: GitHub → Settings → Environments → prod → Required reviewers
+  request-approval:
+    name: Waiting for PROD approval
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - run: echo "PROD deployment approved"
+
+  deploy-backend:
+    name: Backend → PROD
+    runs-on: ubuntu-latest
+    needs: request-approval
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_PROD }}
+
+      - name: Build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_PROD }}
+
+      - name: Deploy
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_PROD }}
+
+      - name: Summary
+        run: echo "### Backend PROD → ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy-frontend:
+    name: Frontend → PROD
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_PROD }}
+
+      - name: Build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_PROD }}
+          VITE_API_URL: ${{ secrets.VITE_API_URL_PROD }}
+
+      - name: Deploy
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_PROD }}
+
+      - name: Summary
+        run: echo "### Frontend PROD → ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
