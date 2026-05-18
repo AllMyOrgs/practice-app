@@ -27,11 +27,11 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
-        run: vercel pull --yes --cwd backend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --cwd backend --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_DEV }}
       - name: Build
-        run: vercel build --cwd backend --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --cwd backend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_DEV }}
       - name: Deploy
@@ -60,13 +60,13 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
-        run: vercel pull --yes --cwd frontend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --cwd frontend --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_DEV }}
       - name: Set API URL
         run: echo "VITE_API_URL=${{ secrets.VITE_API_URL_DEV }}" >> frontend/.env.production
       - name: Build
-        run: vercel build --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_DEV }}
       - name: Deploy
@@ -106,11 +106,11 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
-        run: vercel pull --yes --cwd backend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --cwd backend --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_QA }}
       - name: Build
-        run: vercel build --cwd backend --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --cwd backend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_QA }}
       - name: Deploy
@@ -139,13 +139,13 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
-        run: vercel pull --yes --cwd frontend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --cwd frontend --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_QA }}
       - name: Set API URL
         run: echo "VITE_API_URL=${{ secrets.VITE_API_URL_QA }}" >> frontend/.env.production
       - name: Build
-        run: vercel build --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_QA }}
       - name: Deploy
@@ -185,11 +185,11 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
-        run: vercel pull --yes --cwd backend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --cwd backend --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_STG }}
       - name: Build
-        run: vercel build --cwd backend --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --cwd backend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID_STG }}
       - name: Deploy
@@ -218,13 +218,13 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
-        run: vercel pull --yes --cwd frontend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --cwd frontend --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_STG }}
       - name: Set API URL
         run: echo "VITE_API_URL=${{ secrets.VITE_API_URL_STG }}" >> frontend/.env.production
       - name: Build
-        run: vercel build --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --prod --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_STG }}
       - name: Deploy
