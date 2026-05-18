@@ -21,6 +21,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
@@ -60,11 +63,12 @@ jobs:
         run: vercel pull --yes --cwd frontend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_DEV }}
+      - name: Set API URL
+        run: echo "VITE_API_URL=${{ secrets.VITE_API_URL_DEV }}" >> frontend/.env.production
       - name: Build
         run: vercel build --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_DEV }}
-          VITE_API_URL: ${{ secrets.VITE_API_URL_DEV }}
       - name: Deploy
         id: deploy
         run: |
@@ -82,7 +86,7 @@ jobs:
     name: "[QA] Awaiting Approval"
     runs-on: ubuntu-latest
     needs: dev-frontend
-    environment: qa          # pauses here — notifies reviewers configured in GitHub → Settings → Environments → qa
+    environment: qa # pauses here — notifies reviewers configured in GitHub → Settings → Environments → qa
     steps:
       - run: echo "QA deployment approved"
 
@@ -90,11 +94,15 @@ jobs:
     name: "[QA] Deploy Backend"
     runs-on: ubuntu-latest
     needs: qa-approval
+    environment: qa
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
@@ -119,6 +127,7 @@ jobs:
     name: "[QA] Deploy Frontend"
     runs-on: ubuntu-latest
     needs: qa-backend
+    environment: qa
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -133,11 +142,12 @@ jobs:
         run: vercel pull --yes --cwd frontend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_QA }}
+      - name: Set API URL
+        run: echo "VITE_API_URL=${{ secrets.VITE_API_URL_QA }}" >> frontend/.env.production
       - name: Build
         run: vercel build --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_QA }}
-          VITE_API_URL: ${{ secrets.VITE_API_URL_QA }}
       - name: Deploy
         id: deploy
         run: |
@@ -155,7 +165,7 @@ jobs:
     name: "[STG] Awaiting Approval"
     runs-on: ubuntu-latest
     needs: qa-frontend
-    environment: stg         # pauses here — notifies reviewers configured in GitHub → Settings → Environments → stg
+    environment: stg # pauses here — notifies reviewers configured in GitHub → Settings → Environments → stg
     steps:
       - run: echo "STG deployment approved"
 
@@ -163,11 +173,15 @@ jobs:
     name: "[STG] Deploy Backend"
     runs-on: ubuntu-latest
     needs: stg-approval
+    environment: stg
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
@@ -192,6 +206,7 @@ jobs:
     name: "[STG] Deploy Frontend"
     runs-on: ubuntu-latest
     needs: stg-backend
+    environment: stg
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -206,11 +221,12 @@ jobs:
         run: vercel pull --yes --cwd frontend --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_STG }}
+      - name: Set API URL
+        run: echo "VITE_API_URL=${{ secrets.VITE_API_URL_STG }}" >> frontend/.env.production
       - name: Build
         run: vercel build --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_STG }}
-          VITE_API_URL: ${{ secrets.VITE_API_URL_STG }}
       - name: Deploy
         id: deploy
         run: |
@@ -228,7 +244,7 @@ jobs:
     name: "[PROD] Awaiting Approval"
     runs-on: ubuntu-latest
     needs: stg-frontend
-    environment: prod        # pauses here — notifies reviewers configured in GitHub → Settings → Environments → prod
+    environment: prod # pauses here — notifies reviewers configured in GitHub → Settings → Environments → prod
     steps:
       - run: echo "PROD deployment approved"
 
@@ -236,11 +252,15 @@ jobs:
     name: "[PROD] Deploy Backend"
     runs-on: ubuntu-latest
     needs: prod-approval
+    environment: prod
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
       - name: Pull
@@ -265,6 +285,7 @@ jobs:
     name: "[PROD] Deploy Frontend"
     runs-on: ubuntu-latest
     needs: prod-backend
+    environment: prod
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -279,11 +300,12 @@ jobs:
         run: vercel pull --yes --cwd frontend --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_PROD }}
+      - name: Set API URL
+        run: echo "VITE_API_URL=${{ secrets.VITE_API_URL_PROD }}" >> frontend/.env.production
       - name: Build
         run: vercel build --prod --cwd frontend --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID_PROD }}
-          VITE_API_URL: ${{ secrets.VITE_API_URL_PROD }}
       - name: Deploy
         id: deploy
         run: |
