@@ -31,14 +31,17 @@ async function readData() {
 }
 
 module.exports = async function handler(req, res) {
+  // Set CORS headers first, before any other processing
   setCors(res);
-  if (req.method === "OPTIONS") return res.status(204).end();
-  if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
 
   try {
+    if (req.method === "OPTIONS") return res.status(204).end();
+    if (req.method !== "GET") return res.status(405).json({ error: "Method not allowed" });
+
     const data = await readData();
     return res.status(200).json(data);
   } catch (err) {
+    // CORS headers already set, so error response will include them
     return res.status(500).json({ error: err.message });
   }
 };

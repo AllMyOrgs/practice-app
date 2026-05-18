@@ -41,28 +41,34 @@ async function writeData(data) {
 }
 
 module.exports = async function handler(req, res) {
+  // Set CORS headers first, before any other processing
   setCors(res);
-  if (req.method === "OPTIONS") return res.status(204).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const { name, email, department, experience, skills, agreeToTerms } = req.body || {};
-  if (!name || !email || !department || !experience) return res.status(400).json({ error: "Missing required fields" });
+  try {
+    if (req.method === "OPTIONS") return res.status(204).end();
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  const data = await readData();
+    const { name, email, department, experience, skills, agreeToTerms } = req.body || {};
+    if (!name || !email || !department || !experience) return res.status(400).json({ error: "Missing required fields" });
 
-  const submission = {
-    id: Date.now().toString(),
-    name: String(name).trim(),
-    email: String(email).trim().toLowerCase(),
-    department: String(department),
-    experience: String(experience),
-    skills: Array.isArray(skills) ? skills : [],
-    agreeToTerms: Boolean(agreeToTerms),
-    submittedAt: new Date().toISOString(),
-  };
+    const data = await readData();
 
-  data.submissions.push(submission);
-  await writeData(data);
+    const submission = {
+      id: Date.now().toString(),
+      name: String(name).trim(),
+      email: String(email).trim().toLowerCase(),
+      department: String(department),
+      experience: String(experience),
+      skills: Array.isArray(skills) ? skills : [],
+      agreeToTerms: Boolean(agreeToTerms),
+      submittedAt: new Date().toISOString(),
+    };
 
-  return res.status(201).json({ success: true, submission });
+    data.submissions.push(submission);
+    await writeData(data);
+
+    return res.status(201).json({ success: true, submission });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 };
